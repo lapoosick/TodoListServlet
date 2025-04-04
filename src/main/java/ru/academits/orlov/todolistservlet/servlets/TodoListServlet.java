@@ -101,7 +101,6 @@ public class TodoListServlet extends HttpServlet {
                     <form action="%s" method="POST">
                         <input type="text" name="text" size=40>
                         <button type="submit" name="action" value="create">Добавить</button>
-                        <button type="submit" name="action" value="foo">Bad button</button>
                         %s
                     </form>
                 
