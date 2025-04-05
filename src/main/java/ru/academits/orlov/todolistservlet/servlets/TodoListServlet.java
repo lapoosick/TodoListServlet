@@ -29,34 +29,34 @@ public class TodoListServlet extends HttpServlet {
         String baseURL = getServletContext().getContextPath() + "/";
 
         HttpSession session = req.getSession(false);
-        String emptyCreateTodoItemErrorHtml = "";
+        String emptyCreateItemErrorHtml = "";
         StringBuilder todoListHtml = new StringBuilder();
 
         if (session != null) {
-            String emptyCreateTodoItemError = (String) session.getAttribute("emptyCreateTodoItem");
+            String emptyCreateItemError = (String) session.getAttribute("emptyCreateItem");
 
-            if (emptyCreateTodoItemError != null) {
-                emptyCreateTodoItemErrorHtml = "<div>%s</div>".formatted(StringEscapeUtils.escapeHtml4(emptyCreateTodoItemError));
+            if (emptyCreateItemError != null) {
+                emptyCreateItemErrorHtml = "<div>%s</div>".formatted(StringEscapeUtils.escapeHtml4(emptyCreateItemError));
 
-                session.removeAttribute("emptyCreateTodoItem");
+                session.removeAttribute("emptyCreateItem");
             }
 
             TodoItemsRepository repository = new TodoItemsInMemoryRepository();
             List<TodoItem> todoItems = repository.getAll();
 
-            Integer emptyTodoItemId = (Integer) session.getAttribute("emptyTodoItemId");
-            String emptyUpdateTodoItemErrorHtml = "";
+            Integer emptyItemId = (Integer) session.getAttribute("emptyItemId");
+            String emptyUpdateItemErrorHtml = "";
             String invalidIdErrorHtml = "";
 
             for (TodoItem todoItem : todoItems) {
-                int todoItemId = todoItem.getId();
+                int itemId = todoItem.getId();
 
-                if (emptyTodoItemId != null && emptyTodoItemId == todoItemId) {
-                    String emptyUpdateTodoItemError = (String) session.getAttribute("emptyUpdateTodoItem");
-                    emptyUpdateTodoItemErrorHtml = "<div>%s</div>".formatted(StringEscapeUtils.escapeHtml4(emptyUpdateTodoItemError));
+                if (emptyItemId != null && emptyItemId == itemId) {
+                    String emptyUpdateItemError = (String) session.getAttribute("emptyUpdateItem");
+                    emptyUpdateItemErrorHtml = "<div>%s</div>".formatted(StringEscapeUtils.escapeHtml4(emptyUpdateItemError));
 
-                    session.removeAttribute("emptyTodoItemId");
-                    session.removeAttribute("emptyUpdateTodoItem");
+                    session.removeAttribute("emptyItemId");
+                    session.removeAttribute("emptyUpdateItem");
                 }
 
                 String invalidIdError = (String) session.getAttribute("invalidId");
@@ -80,10 +80,10 @@ public class TodoListServlet extends HttpServlet {
                                     </form>
                                 </li>
                                 """.formatted(baseURL, StringEscapeUtils.escapeHtml4(todoItem.getText()),
-                                emptyUpdateTodoItemErrorHtml, invalidIdErrorHtml, todoItemId))
+                                emptyUpdateItemErrorHtml, invalidIdErrorHtml, itemId))
                         .append("\n");
 
-                emptyUpdateTodoItemErrorHtml = "";
+                emptyUpdateItemErrorHtml = "";
                 invalidIdErrorHtml = "";
             }
         }
@@ -109,7 +109,7 @@ public class TodoListServlet extends HttpServlet {
                     </ul>
                 </body>
                 </html>
-                """.formatted(baseURL, emptyCreateTodoItemErrorHtml, todoListHtml));
+                """.formatted(baseURL, emptyCreateItemErrorHtml, todoListHtml));
     }
 
     @Override
@@ -119,27 +119,27 @@ public class TodoListServlet extends HttpServlet {
 
         switch (action) {
             case "create" -> {
-                String text = req.getParameter("text").trim();
+                String itemText = req.getParameter("text").trim();
 
-                if (text.isEmpty()) {
+                if (itemText.isEmpty()) {
                     HttpSession session = req.getSession();
-                    session.setAttribute("emptyCreateTodoItem", "Заметка не может быть пустой.");
+                    session.setAttribute("emptyCreateItem", "Заметка не может быть пустой.");
                 } else {
-                    todoItemsRepository.create(text);
+                    todoItemsRepository.create(new TodoItem(itemText));
                 }
             }
 
             case "update" -> {
-                int todoItemId = Integer.parseInt(req.getParameter("id"));
-                String text = req.getParameter("text").trim();
+                int itemId = Integer.parseInt(req.getParameter("id"));
+                String itemText = req.getParameter("text").trim();
                 HttpSession session = req.getSession();
 
-                if (text.isEmpty()) {
-                    session.setAttribute("emptyTodoItemId", todoItemId);
-                    session.setAttribute("emptyUpdateTodoItem", "Заметка не может быть пустой.");
+                if (itemText.isEmpty()) {
+                    session.setAttribute("emptyItemId", itemId);
+                    session.setAttribute("emptyUpdateItem", "Заметка не может быть пустой.");
                 } else {
                     try {
-                        todoItemsRepository.update(todoItemId, text);
+                        todoItemsRepository.update(new TodoItem(itemId, itemText));
                     } catch (IllegalArgumentException e) {
                         session.setAttribute("invalidId", "Невозможно найти запись с указанным id.");
                     }
@@ -147,9 +147,9 @@ public class TodoListServlet extends HttpServlet {
             }
 
             case "delete" -> {
-                int id = Integer.parseInt(req.getParameter("id"));
+                int itemId = Integer.parseInt(req.getParameter("id"));
 
-                todoItemsRepository.delete(id);
+                todoItemsRepository.delete(itemId);
             }
         }
 

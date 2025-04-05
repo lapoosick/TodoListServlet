@@ -7,41 +7,44 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class TodoItemsInMemoryRepository implements TodoItemsRepository {
-    private static final List<TodoItem> TODO_ITEMS = new ArrayList<>();
-    private static final AtomicInteger NEW_ID = new AtomicInteger();
+    private static final List<TodoItem> todoItems = new ArrayList<>();
+    private static final AtomicInteger newId = new AtomicInteger();
 
     @Override
     public List<TodoItem> getAll() {
-        synchronized (TODO_ITEMS) {
-            return TODO_ITEMS.stream()
+        synchronized (todoItems) {
+            return todoItems.stream()
                     .map(TodoItem::new)
                     .toList();
         }
     }
 
     @Override
-    public void create(String text) {
-        synchronized (TODO_ITEMS) {
-            TODO_ITEMS.add(new TodoItem(NEW_ID.incrementAndGet(), text));
+    public void create(TodoItem item) {
+        synchronized (todoItems) {
+            item.setId(newId.incrementAndGet());
+            todoItems.add(item);
         }
     }
 
     @Override
-    public void update(int id, String text) {
-        synchronized (TODO_ITEMS) {
-            TodoItem repositoryItem = TODO_ITEMS.stream()
-                    .filter(todoItem -> todoItem.getId() == id)
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Can't find item with id = " + id));
+    public void update(TodoItem item) {
+        synchronized (todoItems) {
+            int todoItemId = item.getId();
 
-            repositoryItem.setText(text);
+            TodoItem repositoryItem = todoItems.stream()
+                    .filter(todoItem -> todoItem.getId() == todoItemId)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Can't find item with id = " + todoItemId));
+
+            repositoryItem.setText(item.getText());
         }
     }
 
     @Override
     public void delete(int itemId) {
-        synchronized (TODO_ITEMS) {
-            TODO_ITEMS.removeIf(item -> item.getId() == itemId);
+        synchronized (todoItems) {
+            todoItems.removeIf(item -> item.getId() == itemId);
         }
     }
 }

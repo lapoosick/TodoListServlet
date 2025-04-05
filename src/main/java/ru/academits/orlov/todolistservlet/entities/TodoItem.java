@@ -14,6 +14,10 @@ public class TodoItem {
         this.text = item.text;
     }
 
+    public TodoItem(String text) {
+        this.text = text;
+    }
+
     public int getId() {
         return id;
     }
