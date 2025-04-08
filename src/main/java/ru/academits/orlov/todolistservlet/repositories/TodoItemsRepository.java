@@ -9,7 +9,7 @@ public interface TodoItemsRepository {
 
     void create(TodoItem item);
 
-    void update(TodoItem item);
+    void update(TodoItem item) throws IllegalArgumentException;
 
     void delete(int id);
 }

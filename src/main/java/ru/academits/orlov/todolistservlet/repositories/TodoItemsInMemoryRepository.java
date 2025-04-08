@@ -28,7 +28,7 @@ public class TodoItemsInMemoryRepository implements TodoItemsRepository {
     }
 
     @Override
-    public void update(TodoItem item) {
+    public void update(TodoItem item) throws IllegalArgumentException {
         synchronized (todoItems) {
             int todoItemId = item.getId();
 
